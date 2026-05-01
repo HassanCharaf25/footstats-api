@@ -1,0 +1,31 @@
+# --- Core Flask ---
+Flask==3.0.3
+Werkzeug==3.0.4
+
+# --- Database / ORM ---
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+SQLAlchemy==2.0.35
+PyMySQL==1.1.1
+cryptography==43.0.1
+
+# --- Validation / Serialization ---
+marshmallow==3.22.0
+flask-marshmallow==1.2.1
+marshmallow-sqlalchemy==1.1.0
+
+# --- API documentation (Swagger) ---
+flasgger==0.9.7.1
+
+# --- CORS (frontend local) ---
+Flask-Cors==4.0.1
+
+# --- Configuration ---
+python-dotenv==1.0.1
+
+# --- Production WSGI server ---
+gunicorn==23.0.0
+
+# --- Testing ---
+pytest==8.3.3
+pytest-flask==1.3.0

@@ -1,0 +1,76 @@
+# =============================================================
+# FootStats API - docker-compose.yml
+# Deux services : MySQL 8 et l'API Flask.
+# Volume nommé pour persister la base. Healthcheck sur la DB
+# pour que l'API ne démarre qu'une fois MySQL prêt.
+# =============================================================
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: footstats-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      # Port exposé en local uniquement pour le debug (DBeaver, MySQL Workbench).
+      # À retirer en production.
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - footstats-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: footstats-api:latest
+    container_name: footstats-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      FLASK_ENV: ${FLASK_ENV}
+      FLASK_APP: ${FLASK_APP}
+      SECRET_KEY: ${SECRET_KEY}
+    ports:
+      - "${API_PORT:-5000}:5000"
+    volumes:
+      # Hot-reload du code en dev. À commenter pour une exécution en mode "image figée".
+      - ./app:/app/app
+      - ./wsgi.py:/app/wsgi.py
+      - ./migrations:/app/migrations
+      - ./seed:/app/seed
+      - ./static:/app/static
+      - ./frontend:/app/frontend
+    command: >
+      sh -c "
+        echo '--- Application des migrations ---' &&
+        flask db upgrade || echo 'Aucune migration à appliquer (premier démarrage ?)' &&
+        echo '--- Lancement de Flask ---' &&
+        flask run --host=0.0.0.0 --port=5000 --debug
+      "
+    networks:
+      - footstats-net
+
+volumes:
+  mysql_data:
+    name: footstats_mysql_data
+
+networks:
+  footstats-net:
+    name: footstats-net
+    driver: bridge
