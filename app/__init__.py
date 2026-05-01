@@ -47,10 +47,9 @@ def create_app(config_class=None) -> Flask:
     swagger.init_app(app)
 
     # ----- Modèles (import après init pour enregistrer les tables) -----
-    # NOTE : décommenter au fur et à mesure de la création des modèles.
-    # from app.models import (
-    #     player, player_profile, club, season, competition, player_season_stats,
-    # )
+    # L'import déclenche l'enregistrement des modèles dans db.metadata,
+    # ce qui permet à Flask-Migrate de générer correctement les migrations.
+    from app import models  # noqa: F401
 
     # ----- Blueprints -----
     # NOTE : à décommenter au fur et à mesure.

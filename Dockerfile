@@ -32,10 +32,13 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # ----- Copie du code applicatif -----
 COPY . .
 
-# ----- Utilisateur non-root pour la sécurité -----
+# ----- Utilisateur non-root (DÉSACTIVÉ en dev pour éviter les conflits de
+# permissions sur les volumes montés depuis l'hôte). On garde la création de
+# l'utilisateur pour pouvoir l'activer facilement en prod via une variante du
+# Dockerfile ou en surchargeant la directive USER.
 RUN useradd --create-home --shell /bin/bash appuser \
     && chown -R appuser:appuser /app
-USER appuser
+# USER appuser   # <-- à activer en production
 
 # ----- Exposition du port HTTP -----
 EXPOSE 5000
