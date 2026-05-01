@@ -43,3 +43,6 @@ instance/
 
 # --- Docker ---
 *.pid
+
+# Macos file
+.DS_Store
