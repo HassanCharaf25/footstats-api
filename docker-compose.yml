@@ -56,13 +56,12 @@ services:
       - ./seed:/app/seed
       - ./static:/app/static
       - ./frontend:/app/frontend
-    command: >
-      sh -c "
-        echo '--- Application des migrations ---' &&
-        flask db upgrade || echo 'Aucune migration à appliquer (premier démarrage ?)' &&
-        echo '--- Lancement de Flask ---' &&
-        flask run --host=0.0.0.0 --port=5000 --debug
-      "
+      - ./tests:/app/tests
+      - ./pytest.ini:/app/pytest.ini
+    # On lance directement Flask. Les migrations se font manuellement
+    # (voir le README) pour éviter les boucles de redémarrage tant que
+    # le dossier migrations/ n'est pas initialisé.
+    command: flask run --host=0.0.0.0 --port=5000 --debug
     networks:
       - footstats-net
 

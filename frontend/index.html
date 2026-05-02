@@ -3,28 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FootStats API</title>
+    <title>FootStats — Recherche de joueur</title>
     <link rel="stylesheet" href="/frontend/style.css">
 </head>
 <body>
-    <main class="container">
-        <h1>⚽ FootStats API</h1>
-        <p class="subtitle">L'API tourne. Le frontend complet sera branché à l'étape 12.</p>
+    <header class="header">
+        <div class="header-inner">
+            <h1>⚽ FootStats</h1>
+            <nav>
+                <a href="/api/docs/" target="_blank" rel="noopener">Documentation API</a>
+                <a href="/api/health" target="_blank" rel="noopener">Statut</a>
+            </nav>
+        </div>
+    </header>
 
-        <section class="card">
-            <h2>Liens utiles</h2>
-            <ul>
-                <li><a href="/api/health">/api/health</a> — état du service</li>
-                <li><a href="/api/docs/">/api/docs/</a> — documentation Swagger (à venir)</li>
-            </ul>
+    <main class="container">
+        <section class="search-card">
+            <h2>Rechercher un joueur</h2>
+            <div class="form-row">
+                <input
+                    id="search-input"
+                    type="text"
+                    placeholder="Nom du joueur (ex. Mbappé, Messi...)"
+                    autocomplete="off"
+                />
+                <select id="season-select">
+                    <option value="">Toutes les saisons</option>
+                </select>
+                <button id="search-btn" type="button">Rechercher</button>
+            </div>
+            <p class="hint">
+                Astuce : tapez quelques lettres puis appuyez sur Entrée.
+                Vous pouvez ensuite cliquer sur un joueur pour voir sa fiche complète.
+            </p>
         </section>
 
-        <section class="card">
-            <h2>Test rapide</h2>
-            <button id="ping-btn">Tester /api/health</button>
-            <pre id="ping-result">—</pre>
+        <section id="results" class="results"></section>
+
+        <section id="player-detail" class="player-detail hidden"></section>
+
+        <section class="seed-card">
+            <h2>Base vide ?</h2>
+            <p>Importez le jeu de données de démo (6 joueurs, 6 clubs, 3 saisons).</p>
+            <button id="seed-btn" type="button" class="secondary">Importer les données de démo</button>
+            <pre id="seed-result" class="output hidden"></pre>
         </section>
     </main>
+
+    <footer class="footer">
+        <p>Projet Principe de Programmation</p>
+    </footer>
 
     <script src="/frontend/script.js"></script>
 </body>

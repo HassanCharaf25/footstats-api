@@ -1,0 +1,310 @@
+swagger: "2.0"
+info:
+  title: FootStats API
+  version: "1.0.0"
+  description: |
+    API RESTful pour consulter et gérer les statistiques de joueurs de football
+    par saison, club et compétition.
+
+    **Relations modélisées** :
+    - One-to-One   : Player ↔ PlayerProfile
+    - One-to-Many  : Club → Players, Season → Stats
+    - Many-to-Many : Player ↔ Competition (via PlayerSeasonStats)
+
+host: "localhost:5000"
+basePath: "/"
+schemes: ["http"]
+consumes: ["application/json"]
+produces: ["application/json"]
+
+tags:
+  - name: Health
+  - name: Players
+  - name: Clubs
+  - name: Seasons
+  - name: Competitions
+  - name: Stats
+  - name: Utils
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: État du service
+      responses:
+        "200": { description: Service en ligne }
+
+  /api/db/stats:
+    get:
+      tags: [Utils]
+      summary: Compteurs globaux par table
+      responses:
+        "200": { description: OK }
+
+  /api/import/sample-data:
+    post:
+      tags: [Utils]
+      summary: Importer le jeu de données de démo
+      responses:
+        "201": { description: Importé }
+
+  /api/players:
+    get:
+      tags: [Players]
+      summary: Liste paginée des joueurs
+      parameters:
+        - { in: query, name: page, type: integer, default: 1 }
+        - { in: query, name: per_page, type: integer, default: 20 }
+      responses:
+        "200": { description: Liste }
+    post:
+      tags: [Players]
+      summary: Créer un joueur
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/PlayerInput" }
+      responses:
+        "201": { description: Créé }
+        "400": { description: Validation }
+        "409": { description: Conflit }
+
+  /api/players/search:
+    get:
+      tags: [Players]
+      summary: Recherche multi-critères
+      parameters:
+        - { in: query, name: name, type: string }
+        - { in: query, name: club, type: string }
+        - { in: query, name: position, type: string, enum: [Goalkeeper, Defender, Midfielder, Forward] }
+        - { in: query, name: nationality, type: string }
+      responses:
+        "200": { description: Résultats }
+
+  /api/players/{id}:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:
+      tags: [Players]
+      summary: Fiche complète d'un joueur
+      responses:
+        "200": { description: OK }
+        "404": { description: Joueur introuvable }
+    put:
+      tags: [Players]
+      summary: Remplacement complet
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/PlayerInput" }
+      responses:
+        "200": { description: OK }
+    patch:
+      tags: [Players]
+      summary: Mise à jour partielle
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/PlayerInput" }
+      responses:
+        "200": { description: OK }
+    delete:
+      tags: [Players]
+      summary: Supprimer (cascade profil et stats)
+      responses:
+        "204": { description: Supprimé }
+
+  /api/players/{id}/profile:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:
+      tags: [Players]
+      summary: Profil détaillé (relation One-to-One)
+      responses:
+        "200": { description: OK }
+        "404": { description: Sans profil }
+    put:
+      tags: [Players]
+      summary: Crée ou remplace le profil
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/ProfileInput" }
+      responses:
+        "200": { description: Mis à jour }
+        "201": { description: Créé }
+    patch:
+      tags: [Players]
+      summary: Mise à jour partielle du profil
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/ProfileInput" }
+      responses:
+        "200": { description: OK }
+
+  /api/players/{id}/stats:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:
+      tags: [Players]
+      summary: Stats du joueur (filtrables par saison)
+      parameters:
+        - { in: query, name: season, type: string, description: "Libellé saison (ex. 2023-2024)" }
+      responses:
+        "200": { description: OK }
+
+  /api/clubs:
+    get:
+      tags: [Clubs]
+      summary: Liste des clubs
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Clubs]
+      summary: Créer un club
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/ClubInput" }
+      responses:
+        "201": { description: Créé }
+        "409": { description: Doublon }
+
+  /api/clubs/{id}:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:    { tags: [Clubs], summary: Détail,        responses: { "200": { description: OK }}}
+    put:    { tags: [Clubs], summary: Remplacer,     responses: { "200": { description: OK }}}
+    patch:  { tags: [Clubs], summary: Mise à jour,   responses: { "200": { description: OK }}}
+    delete: { tags: [Clubs], summary: Supprimer,     responses: { "204": { description: Supprimé }}}
+
+  /api/seasons:
+    get: { tags: [Seasons], summary: Liste, responses: { "200": { description: OK }}}
+    post:
+      tags: [Seasons]
+      summary: Créer une saison
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/SeasonInput" }
+      responses: { "201": { description: Créé } }
+
+  /api/seasons/{id}:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:    { tags: [Seasons], summary: Détail,    responses: { "200": { description: OK }}}
+    put:    { tags: [Seasons], summary: Remplacer, responses: { "200": { description: OK }}}
+    patch:  { tags: [Seasons], summary: Update,    responses: { "200": { description: OK }}}
+    delete: { tags: [Seasons], summary: Supprimer, responses: { "204": { description: Supprimé }}}
+
+  /api/competitions:
+    get:  { tags: [Competitions], summary: Liste, responses: { "200": { description: OK }}}
+    post:
+      tags: [Competitions]
+      summary: Créer une compétition
+      responses: { "201": { description: Créé } }
+
+  /api/competitions/{id}:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:    { tags: [Competitions], summary: Détail,    responses: { "200": { description: OK }}}
+    put:    { tags: [Competitions], summary: Remplacer, responses: { "200": { description: OK }}}
+    patch:  { tags: [Competitions], summary: Update,    responses: { "200": { description: OK }}}
+    delete: { tags: [Competitions], summary: Supprimer, responses: { "204": { description: Supprimé }}}
+
+  /api/stats:
+    get: { tags: [Stats], summary: Liste, responses: { "200": { description: OK }}}
+    post:
+      tags: [Stats]
+      summary: Créer une ligne de stats
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/StatsInput" }
+      responses:
+        "201": { description: Créé }
+        "409": { description: Doublon de triplet (player, season, competition) }
+
+  /api/stats/{id}:
+    parameters:
+      - { in: path, name: id, type: integer, required: true }
+    get:    { tags: [Stats], summary: Détail,    responses: { "200": { description: OK }}}
+    put:    { tags: [Stats], summary: Remplacer, responses: { "200": { description: OK }}}
+    patch:  { tags: [Stats], summary: Update,    responses: { "200": { description: OK }}}
+    delete: { tags: [Stats], summary: Supprimer, responses: { "204": { description: Supprimé }}}
+
+  /api/stats/upsert:
+    put:
+      tags: [Stats]
+      summary: Crée ou met à jour selon (player_id, season_id, competition_id)
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema: { $ref: "#/definitions/StatsInput" }
+      responses:
+        "200": { description: Mis à jour }
+        "201": { description: Créé }
+
+definitions:
+  PlayerInput:
+    type: object
+    required: [first_name, last_name]
+    properties:
+      first_name:      { type: string, example: Kylian }
+      last_name:       { type: string, example: Mbappé }
+      birth_date:      { type: string, format: date, example: "1998-12-20" }
+      nationality:     { type: string, example: France }
+      position:        { type: string, enum: [Goalkeeper, Defender, Midfielder, Forward] }
+      photo_url:       { type: string }
+      current_club_id: { type: integer }
+
+  ProfileInput:
+    type: object
+    properties:
+      height_cm:      { type: integer, minimum: 100, maximum: 250 }
+      weight_kg:      { type: integer, minimum: 30,  maximum: 200 }
+      preferred_foot: { type: string, enum: [Left, Right, Both] }
+      jersey_number:  { type: integer, minimum: 1, maximum: 99 }
+      biography:      { type: string }
+
+  ClubInput:
+    type: object
+    required: [name]
+    properties:
+      name:         { type: string }
+      country:      { type: string }
+      logo_url:     { type: string }
+      stadium:      { type: string }
+      founded_year: { type: integer }
+
+  SeasonInput:
+    type: object
+    required: [year_label, start_year, end_year]
+    properties:
+      year_label: { type: string, example: "2023-2024" }
+      start_year: { type: integer, example: 2023 }
+      end_year:   { type: integer, example: 2024 }
+
+  StatsInput:
+    type: object
+    required: [player_id, season_id, competition_id]
+    properties:
+      player_id:      { type: integer }
+      club_id:        { type: integer }
+      season_id:      { type: integer }
+      competition_id: { type: integer }
+      goals:          { type: integer, minimum: 0 }
+      assists:        { type: integer, minimum: 0 }
+      appearances:    { type: integer, minimum: 0 }
+      minutes_played: { type: integer, minimum: 0 }
+      yellow_cards:   { type: integer, minimum: 0 }
+      red_cards:      { type: integer, minimum: 0 }

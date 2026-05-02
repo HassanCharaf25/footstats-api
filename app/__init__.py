@@ -52,22 +52,26 @@ def create_app(config_class=None) -> Flask:
     from app import models  # noqa: F401
 
     # ----- Blueprints -----
-    # NOTE : à décommenter au fur et à mesure.
-    # from app.routes.players_bp import players_bp
-    # from app.routes.clubs_bp import clubs_bp
-    # from app.routes.seasons_bp import seasons_bp
-    # from app.routes.competitions_bp import competitions_bp
-    # from app.routes.stats_bp import stats_bp
-    # from app.routes.utils_bp import utils_bp
-    # app.register_blueprint(players_bp, url_prefix="/api/players")
-    # app.register_blueprint(clubs_bp, url_prefix="/api/clubs")
-    # app.register_blueprint(seasons_bp, url_prefix="/api/seasons")
-    # app.register_blueprint(competitions_bp, url_prefix="/api/competitions")
-    # app.register_blueprint(stats_bp, url_prefix="/api/stats")
-    # app.register_blueprint(utils_bp, url_prefix="/api")
+    from app.routes.players_bp import players_bp
+    from app.routes.clubs_bp import clubs_bp
+    from app.routes.seasons_bp import seasons_bp
+    from app.routes.competitions_bp import competitions_bp
+    from app.routes.stats_bp import stats_bp
+    from app.routes.utils_bp import utils_bp
+
+    app.register_blueprint(players_bp, url_prefix="/api/players")
+    app.register_blueprint(clubs_bp, url_prefix="/api/clubs")
+    app.register_blueprint(seasons_bp, url_prefix="/api/seasons")
+    app.register_blueprint(competitions_bp, url_prefix="/api/competitions")
+    app.register_blueprint(stats_bp, url_prefix="/api/stats")
+    app.register_blueprint(utils_bp, url_prefix="/api")
 
     # ----- Gestion d'erreurs JSON -----
     register_error_handlers(app)
+
+    # ----- Commandes CLI personnalisées -----
+    from app.cli import register_cli
+    register_cli(app)
 
     # ----- Routes minimales (en attendant les blueprints) -----
     @app.route("/api/health", methods=["GET"])
