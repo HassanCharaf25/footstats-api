@@ -581,8 +581,8 @@ Démontrer la capacité à concevoir, développer, conteneuriser et déployer un
 
 ## Auteurs
 
-Hassan Charaf
-Lyes Djemaa
+- Hassan Charaf
+- Lyes Djemaa
 
 ## Licence
 
