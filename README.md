@@ -581,7 +581,8 @@ Démontrer la capacité à concevoir, développer, conteneuriser et déployer un
 
 ## Auteurs
 
-Projet réalisé dans le cadre de la SAE *« Développement & Déploiement d'une Application Web RESTful Conteneurisée »*.
+Hassan Charaf
+Lyes Djemaa
 
 ## Licence
 
